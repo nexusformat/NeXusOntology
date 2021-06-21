@@ -10,7 +10,7 @@ NeXus nxdl definition files on the NeXus GitHub site.
 See 'seeAlso' for links to the NeXus project, including licencing information.  
     This project was undertaken under ExPaNDS WP3.2 (https://expands.eu/)
     
-##Purpose
+**Purpose**    
 The ontology is designed to fulfil several purposes. First, it creates unique identifiers
 for each of the NeXus fields which would normally exist only within the namespaces of the
 defining NeXus classes. This is the primary goal and provides PIDs for annotation and tagging.
@@ -20,7 +20,7 @@ Finally, we hope that this ontology, when used with a tool such as Protege, will
 useful 'NeXus Explorer' tool to gain a quick overview of NeXus with links to official NeXus 
 documentation.
     
-##Design Philosophy
+**Design Philosophy**    
 The terms in the ontology are extracted almost entirely from NeXus nxdl definition file and converted to
 an OWL ontology using the owlready2 python module (https://pypi.org/project/Owlready2/)
 NeXus classes - Base Classes and Application Definitions - are expressed as OWL classes.
@@ -38,11 +38,11 @@ properties of the NeXus Base Classes, even though they are defined outside the o
 NeXus classes are reviewed periodically by the NeXus NIAC. It is anticipated that this ontology can be updated 
 quickly and automatically to reflect the updated definitions.
     
-##Caveats
+**Caveats**  
 Some NeXus classes (e.g. NXtransformations) are related specifically to the class that they are contained in.
 This relationship is not preserves.  
 NeXus allows multiple instances of metadata fields within a dataset. Relating multiple field values to a
 single identifier will require a selection algorithm.
     
-##Version
+**Version**  
 The version string is the NeXus version followed by the ontology version.
