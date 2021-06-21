@@ -1,4 +1,4 @@
-#NeXusOntology creation script
+**NeXusOntology creation script**
 
 Run either the Jupyter notebook or exported Python script
 
