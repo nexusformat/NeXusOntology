@@ -40,7 +40,7 @@ quickly and automatically to reflect the updated definitions.
     
 **Caveats**  
 Some NeXus classes (e.g. NXtransformations) are related specifically to the class that they are contained in.
-This relationship is not preserves.  
+This relationship is not preserved.  
 NeXus allows multiple instances of metadata fields within a dataset. Relating multiple field values to a
 single identifier will require a selection algorithm.
     
