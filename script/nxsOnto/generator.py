@@ -20,8 +20,8 @@
 #github token and file path for created owl file - edit this cell
 _script_version = '1.1' # script version - update after edit
 token = "" # insert your github token
-out_path = '/home/spc93/ontology'
-tmp_file_path = '/home/spc93/tmp'
+out_path = '/home/mvs/ontology'
+tmp_file_path = '/home/mvs/tmp'
 #################################################################
 
 
