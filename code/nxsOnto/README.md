@@ -4,12 +4,12 @@ Run either the Jupyter notebook or exported Python script
 
 Ensure that owlready2 and pygithub are installed (pip install)
 
-Edit four lines near the top of the script:
+Add four parameters when running the code:
 
 _script_version (change version if the ontology has been modified by changes to the script)  
-token (your github token - see below)  
-out_path (path for created .owl file)  
-tmp_file_path (temporary file path)  
+1. token (your github token - see below)  
+2. out_path (path for created .owl file)  
+3. tmp_file_path (temporary file path)  
 
 To get a Github access token:  
 Github/settings/developer settings/personal access tokens/create new token
