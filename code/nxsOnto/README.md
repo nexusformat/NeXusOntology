@@ -1,20 +1,12 @@
 **NeXusOntology creation script**
 
-Run either the Jupyter notebook or exported Python script
+Ensure that owlready2 and pygithub are installed (pip install) by running the requirements.txt
 
-Ensure that owlready2 and pygithub are installed (pip install)
-
-Add four parameters when running the code:
-
-_script_version (change version if the ontology has been modified by changes to the script)  
-1. token (your github token - see below)  
-2. out_path (path for created .owl file)  
-3. tmp_file_path (temporary file path)  
-
+Add four parameters when running the code:  
+python3 -m nxsOnto.generator [github access token] [out path for ontology] [temporary file path]
+ 
 To get a Github access token:  
 Github/settings/developer settings/personal access tokens/create new token
-
-Run the script (using Python 3)
 
 Some deprecation warnings are likely to be displayed before the .owl file is created.
 
