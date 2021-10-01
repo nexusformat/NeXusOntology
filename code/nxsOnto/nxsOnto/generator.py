@@ -106,29 +106,6 @@ onto_comment = '''
     The version string is the NeXus version followed by the ontology version.
     
 '''
-'''
-# To avoid re-parsing NeXus files after initial run, execute this
-try:
-    with open(baseclass_pickle_file, "rb") as f:
-        classDict = pickle.load(f)
-except IOError:
-    print("baseclass_pickle_file does not exist yet")
-try:
-    with open(defn_pickle_file, "rb") as f:
-        applicationDict = pickle.load(f)
-except IOError:
-    print("defn_pickle_file does not exist yet")
-try:
-    with open(types_pickle_file, "rb") as f:
-        typesDict = pickle.load(f)
-except IOError:
-    print("types_pickle_file does not exist yet")
-try:
-    with open(tags_pickle_file, "rb") as f:
-        tagsDict = pickle.load(f)
-except IOError:
-    print("tags_pickle_file does not exist yet")
-'''
 
 # Create a dictionary of NeXus simple types (unit categories)
 types_dom = xml.dom.minidom.parse(urllib.request.urlopen(types_url))
