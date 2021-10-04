@@ -18,9 +18,6 @@ import datetime
 #################################################################
 #github token and file path for created owl file - edit this cell
 _script_version = '1.1' # script version - update after edit
-#token = '' # insert your github token
-#out_path = 'ontology'
-#tmp_file_path = 'tmp'
 token = sys.argv[1]
 out_path = sys.argv[2]
 tmp_file_path = sys.argv[3]
