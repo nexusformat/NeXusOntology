@@ -147,9 +147,7 @@ def addFieldToDict(classDict, field, defn_name): # make a function to be reused 
 
     classname_fields = classDict[className]['fields']
     if not long_name in classDict[className]['fields'].keys():
-        #print('~~~ field did not exist: %s' % long_name)
         classname_fields[long_name] = {} # create dictionary for field if doesn't exist
-
 
         classname_fields[long_name]['fieldName'] = field_name
         classname_fields[long_name]['units'] = field.getAttribute('units')
