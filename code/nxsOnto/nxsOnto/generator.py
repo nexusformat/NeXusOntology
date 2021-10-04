@@ -342,7 +342,8 @@ with onto:
         pass
 
     class unitCategory(NeXus):
-        comment = 'NeXus unit category. Can be considered instances of a measure. Assign data properties '             'hasValue(any), hasMinValue(any), hasMaxValue(any), hasUnits(str)'
+        comment = 'NeXus unit category. Can be considered instances of a measure. Assign data properties hasValue(' \
+                  'any), hasMinValue(any), hasMaxValue(any), hasUnits(str) '
 
     class hasValue(DataProperty, FunctionalProperty):
         domain = [unitCategory]
