@@ -140,7 +140,8 @@ def addFieldToDict(classDict, field, defn_name): # make a function to be reused 
 
     deprecationAttribute = field.getAttribute('deprecated')
     if deprecationAttribute:
-        print("=== Deprecation warning %s in %s: %s" % (field_name, className, deprecationAttribute))
+        notice = ['Deprecation warning ', field_name, ' in ',  className, ': ', deprecationAttribute]
+        print(''.join(notice))
 
     long_name = className + join_string + field_name
     label = className + join_string_label + field_name
