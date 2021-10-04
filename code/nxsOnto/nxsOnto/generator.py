@@ -10,7 +10,7 @@ from github import Github
 import json
 import xml.dom.minidom
 import pickle
-from owlready2 import *
+from owlready2 import sys,urllib, onto_path, get_ontology, DataProperty, FunctionalProperty, AnnotationProperty, ObjectProperty, Thing, time
 import types
 import datetime
 
