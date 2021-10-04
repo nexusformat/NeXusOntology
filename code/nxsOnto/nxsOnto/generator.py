@@ -129,7 +129,7 @@ with urllib.request.urlopen(repo.tags_url) as url:
 base_class_url = []
 for file in repo.get_contents("base_classes"):
     if str(file.path).endswith('nxdl.xml'):
-        base_class_url += [file.download_url]
+        base_class_url.append(file.download_url)
 
 
 
