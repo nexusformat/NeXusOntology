@@ -139,37 +139,38 @@ def addFieldToDict(classDict, field, defn_name): # make a function to be reused 
     field_name = field.getAttribute('name')
 
     deprecationAttribute = field.getAttribute('deprecated')
-    if not deprecationAttribute == '':
+    if deprecationAttribute:
         print("=== Deprecation warning %s in %s: %s" % (field_name, className, deprecationAttribute))
 
     long_name = className + join_string + field_name
     label = className + join_string_label + field_name
 
+    classname_fields = classDict[className]['fields']
     if not long_name in classDict[className]['fields'].keys():
         #print('~~~ field did not exist: %s' % long_name)
-        classDict[className]['fields'][long_name] = {} # create dictionary for field if doesn't exist
+        classname_fields[long_name] = {} # create dictionary for field if doesn't exist
 
 
-        classDict[className]['fields'][long_name]['fieldName'] = field_name
-        classDict[className]['fields'][long_name]['units'] = field.getAttribute('units')
-        if classDict[className]['fields'][long_name]['units'] == '':
-            classDict[className]['fields'][long_name]['units'] = default_units
+        classname_fields[long_name]['fieldName'] = field_name
+        classname_fields[long_name]['units'] = field.getAttribute('units')
+        if classname_fields[long_name]['units'] == '':
+            classname_fields[long_name]['units'] = default_units
 
-        classDict[className]['fields'][long_name]['xml_file'] = file #xml file where field is defined
-        classDict[className]['fields'][long_name]['defn_name'] = defn_name # application defn name is passed in if field is defined in a defn, else None is used
-        classDict[className]['fields'][long_name]['label'] = label # compound name for label
+        classname_fields[long_name]['xml_file'] = file #xml file where field is defined
+        classname_fields[long_name]['defn_name'] = defn_name # application defn name is passed in if field is defined in a defn, else None is used
+        classname_fields[long_name]['label'] = label # compound name for label
 
         _type = field.getAttribute('type')
         if _type == '':
             _type = 'NX_CHAR'   # default if not specified
 
-        classDict[className]['fields'][long_name]['type'] = _type
+        classname_fields[long_name]['type'] = _type
 
         try:
             field_doc = field.getElementsByTagName('doc')[0].firstChild.nodeValue.replace('\n','')
         except:
             field_doc = ''
-        classDict[className]['fields'][long_name]['fieldDoc'] = field_doc
+        classname_fields[long_name]['fieldDoc'] = field_doc
 
 
 classDict = {} # create empty classDict dictionary
