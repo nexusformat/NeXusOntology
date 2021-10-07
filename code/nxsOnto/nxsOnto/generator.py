@@ -2,8 +2,7 @@
 # coding: utf-8
 
 # # Python code to parse nexus base class nxdl file contents to python dict and create owl ontology
-# 
-# ## To create the NeXus ontology edit cell 2 and execute the whole notebook.
+# # When updating this file change script version in line 54
 
 
 from github import Github
@@ -14,50 +13,42 @@ from owlready2 import sys,urllib, onto_path, get_ontology, DataProperty, Functio
 import types
 import datetime
 
-
-#################################################################
-#github token and file path for created owl file - edit this cell
-_script_version = '1.1' # script version - update after edit
+# Github token and file path for created owl file
 token = sys.argv[1]
 out_path = sys.argv[2]
 tmp_file_path = sys.argv[3]
 
-#################################################################
-
-
-#get a list of NeXus base class urls from github
-
-base_iri = 'http://purl.org/nexusformat/definitions/'
-nexus_repo = 'nexusformat/definitions' # for github api
-onto_name = 'NeXusOntology'
-_creator = 'NeXus International Advisory Committee (NIAC)'
-_licence = 'https://creativecommons.org/licenses/by/4.0/'
-_publication = 'https://doi.org/10.5281/zenodo.4806026'
-
-onto_iri = base_iri + onto_name
-
-# pickle files used to avoid uneccesary parsing of NeXus files, mainly for development
+# Pickle files used to avoid uneccesary parsing of NeXus files, mainly for development
 defn_pickle_file = tmp_file_path + '/defn.p'
 baseclass_pickle_file = tmp_file_path + '/baseclass.p'
 types_pickle_file = tmp_file_path + '/types.p'
 tags_pickle_file = tmp_file_path + '/tags.p'
 
-base_class_web_page_prefix = 'https://manual.nexusformat.org/classes/base_classes/'
-application_definition_web_page_prefix = 'https://manual.nexusformat.org/classes/applications/'
+# Parameters for retrieving the definitions
+nexus_repository = 'https://github.com/nexusformat'
 types_url = 'https://raw.githubusercontent.com/nexusformat/definitions/main/nxdlTypes.xsd'
+nexus_repo = 'nexusformat/definitions' # for github api
 
+# Operational parameters
 join_string = '-'       #string added between joined base class and field names for identifiers
 join_string_label = ' ' #string added between joined base class and fieldnames for rdfs:label
-
-nexus_website = 'https://www.nexusformat.org/'
-nexus_repository = 'https://github.com/nexusformat'
-
 default_units = 'NX_UNITLESS'   #use this if units not specified
 
+# Parameters for linking definitions in seeAlso field to nexusformat.org
+base_class_web_page_prefix = 'https://manual.nexusformat.org/classes/base_classes/'
+application_definition_web_page_prefix = 'https://manual.nexusformat.org/classes/applications/'
 
+# Create ontology IRI
+base_iri = 'http://purl.org/nexusformat/definitions/'
+onto_name = 'NeXusOntology'
+onto_iri = base_iri + onto_name
 
-
-# Ontology metadata comment
+# Ontology metadata section
+_script_version = '1.1' # script version - update after edit
+nexus_website = 'https://www.nexusformat.org/'
+_creator = 'NeXus International Advisory Committee (NIAC)'
+_licence = 'https://creativecommons.org/licenses/by/4.0/'
+_publication = 'https://doi.org/10.5281/zenodo.4806026'
 onto_comment = '''
 
     This ontology extracts information about NeXus classes and fields from
@@ -107,7 +98,7 @@ onto_comment = '''
 
 def dictionary_from_types():
     """Create a dictionary of NeXus simple types (unit categories) and dumps them to the types_pickle_file"""
-    global typesDict, docstr
+    global typesDict
     types_dom = xml.dom.minidom.parse(urllib.request.urlopen(types_url))
     typesDict = {}
     for nxtype in types_dom.getElementsByTagName('xs:simpleType'):
@@ -133,10 +124,9 @@ def dictionary_from_base_class_files():
             base_class_url.append(file.download_url)
 
 
-def addFieldToDict(field, defn_name): # make a function to be reused later
-    #defn_name is used to add application definition to field dict if the field is defined in an app deff.
+def addFieldToDict(field, defn_name, className):
+    """ defn_name is used to add application definition to field dict if the field is defined in an app deff.  """
     field_name = field.getAttribute('name')
-
     deprecationAttribute = field.getAttribute('deprecated')
     if deprecationAttribute:
         notice = ['Deprecation warning ', field_name, ' in ',  className, ': ', deprecationAttribute]
@@ -172,7 +162,7 @@ def addFieldToDict(field, defn_name): # make a function to be reused later
 
 
 def parse_base_classes():
-    global className, classDict
+    global classDict
     #global classDict, file, dom1, defn, className, docstr, docelement, flds, field, group
     classDict = {}  # create empty classDict dictionary
     _maxTries = 10  # try to parse file this many times before giving up
@@ -211,7 +201,7 @@ def parse_base_classes():
         flds = (field for field in defn.getElementsByTagName('field') if field.parentNode == defn)
 
         for field in flds:
-            addFieldToDict(field, None)
+            addFieldToDict(field, None, className)
 
         classDict[className]['groups_cited'] = []
         for group in defn.getElementsByTagName('group'):
@@ -227,7 +217,7 @@ def parse_application_definitions():
     extract extra base class fields and add to base class dictionary
     get a list of NeXus base application definition urls from github
     """
-    global applicationDict, className
+    global applicationDict
     #global file, applicationDict, dom1, defn_name, group, defn, className, field, flds, docstr, docelement
 
     application_url = []
@@ -254,7 +244,7 @@ def parse_application_definitions():
             flds = (field for field in defn.getElementsByTagName('field') if field.parentNode == defn)
             for field in flds:
                 # print('=== Added field %s from class %s in application definition %s' % (field.getAttribute('name'), className, defn_name))
-                addFieldToDict(field, defn_name)
+                addFieldToDict(field, defn_name, className)
 
         docstr = ''
         for docelement in dom1.getElementsByTagName('doc'):
@@ -274,8 +264,10 @@ def parse_application_definitions():
 
 
 def write_ontology():
-    global onto, created, dataset, unitCategory, hasValue, hasUnit
-    # create owl ontology from previously created dicts using owlready2 module
+    """create owl ontology from previously created dicts using owlready2 module"""
+    global onto, dataset
+    #global onto, created, dataset, unitCategory, hasValue, hasUnit
+
     onto_path.append(out_path)
     onto = get_ontology(onto_iri)
     # get properties from cdterms
