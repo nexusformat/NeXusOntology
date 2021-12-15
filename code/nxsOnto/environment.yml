@@ -1,0 +1,14 @@
+# Define conda environment for use with Python code
+
+name: NeXusOntology
+
+# conda env create -f environment.
+# conda activate NeXusOntology
+
+channels:
+  - defaults
+  - conda-forge
+
+dependencies:
+  - owlready2
+  - pygithub
