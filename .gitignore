@@ -1,0 +1,5 @@
+# python file cache
+__pycache__/
+
+# python build products
+*egg-info/
