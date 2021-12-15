@@ -2,7 +2,7 @@
 
 name: NeXusOntology
 
-# conda env create -f environment.
+# conda env create -f environment.yml
 # conda activate NeXusOntology
 
 channels:
