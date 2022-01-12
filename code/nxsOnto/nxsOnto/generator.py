@@ -446,9 +446,13 @@ def create_test_individuals():
     onto.save()
 
 
-dictionary_from_types()
-dictionary_from_base_class_files()
-parse_base_classes()
-parse_application_definitions()
-write_ontology()
-create_test_individuals()
+def main():
+    dictionary_from_types()
+    dictionary_from_base_class_files()
+    parse_base_classes()
+    parse_application_definitions()
+    write_ontology()
+    create_test_individuals()
+
+if __name__ == "__main__":
+    main()
