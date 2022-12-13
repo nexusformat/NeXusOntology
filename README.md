@@ -1,3 +1,7 @@
+# How to run the latest Ontology
+
+CD to the script folder. Run 'python NeXusOntology.py'
+
 # NeXusOntology
 NeXusOntology: Machine-readable ontology of the NeXus definitions.
 
