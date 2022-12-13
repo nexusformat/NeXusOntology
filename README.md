@@ -1,5 +1,6 @@
 # How to run the latest Ontology
 
+Make sure you have the definitions submodule initialized using: git submodule update --init
 CD to the script folder. Run 'python NeXusOntology.py'
 
 # NeXusOntology
