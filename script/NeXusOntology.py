@@ -149,8 +149,7 @@ with onto:
         comment = nxdl_info["base_classes"]['NXobject']['doc'].replace('\t','') # NeXus documentation string
         # seeAlso = base_class_web_page_prefix + 'NXobject' + '.html'
     NXobject.set_iri(NXobject, base_iri + 'NXobject')   #set iri using agree pattern for Nexus
-    class has(NeXus >> NeXus):
-        comment = 'A representation of a "has a" relationship.'
+    
     class NeXusBaseClass(NXobject):
         comment = 'NeXus Base Class (Newer entries are found in Contributed Definitions)'
         seeAlso = web_page_prefix + 'base_classes/index.html'
@@ -162,26 +161,26 @@ with onto:
     class NeXusAttribute(NXobject):
         comment = 'NeXus Attribute'
 
-    class NeXusUnit(NeXusAttribute):
-        comment = "NeXus Unit is the string representation of the unit for a given NeXus Field."
-        label = "NeXusUnit"
+    #class NeXusUnit(NeXusAttribute):
+    #    comment = "NeXus Unit is the string representation of the unit for a given NeXus Field."
+    #    label = "NeXusUnit"
 
     class NeXusField(NXobject):
         comment = 'NeXus Field'
-        is_a = [has.some(NeXusUnit)]
+        # is_a = [has.some(NeXusUnit)]
 
     class NeXusGroup(NXobject):
         comment = 'NeXus Group'
     
-    class NeXusAttributeUnit(NeXusAttribute):
-        comment = ('NeXus allows users to add units to values stored as NeXusAttributes. For such NeXusAttributes with a unit'
-                   ' the following convention is used: \n'
-                   ' <attribute_name>_units')
-        seeAlso = 'https://manual.nexusformat.org/classes/base_classes/NXdetector_module.html?highlight=_units#nxdetector-module-slow-pixel-direction-offset-units-attribute'
+    #class NeXusAttributeUnit(NeXusAttribute):
+    #    comment = ('NeXus allows users to add units to values stored as NeXusAttributes. For such NeXusAttributes with a unit'
+    #               ' the following convention is used: \n'
+    #               ' <attribute_name>_units')
+    #    seeAlso = 'https://manual.nexusformat.org/classes/base_classes/NXdetector_module.html?highlight=_units#nxdetector-module-slow-pixel-direction-offset-units-attribute'
     
-    class NeXusUnit(NXobject):
-        comment = "NeXus Unit is the unit for a given field or attribute."
-        label = "NeXusUnit"
+    #class NeXusUnit(NXobject):
+    #    comment = "NeXus Unit is the unit for a given field or attribute."
+    #    label = "NeXusUnit"
 
     class NeXusUnitCategory(NeXus):
         comment = ("Unit categories in NXDL specifications describe the expected type of units for a NeXus field."
@@ -199,9 +198,25 @@ with onto:
         comment = "any valid NeXus field or attribute type"
         label = "NeXusDataType"
 
+    owlready2.AllDisjoint([NeXusDataType, NeXusEnumerationItem,NeXusUnitCategory,NXobject])
+    owlready2.AllDisjoint([NeXusGroup,NeXusField,NeXusAttribute])
+    owlready2.AllDisjoint([NeXusBaseClass,NeXusField,NeXusAttribute])
+    owlready2.AllDisjoint([NeXusApplicationClass,NeXusField,NeXusAttribute])
+
+
+
     class extends(owlready2.AnnotationProperty):
         pass
 
+    class has(NXobject >> NXobject):
+        comment = 'A representation of a "has a" relationship.'
+    #class hasValue(owlready2.DataProperty):
+    #    range = [data_types["NX_CHAR"]["onto_class"],data_types["NX_INT"]["onto_class"],data_types["NX_NUMBER"]["onto_class"]]
+    class hasValue(NXobject >> NeXusDataType):
+        comment = 'Representation fo having a Value assigned.'
+    class hasUnit(NeXusField >> NeXusUnitCategory):
+        comment = 'Representation of having a Unit assigned.'
+    owlready2.AllDisjoint([has,hasValue,hasUnit])
 
     def set_is_a_or_equivalent(subclass, superclass):
         def has_diff_relations(subclass, superclass):
@@ -230,18 +245,21 @@ with onto:
         web_page = web_page_base_prefix + "nxdl-types.html#" + unit.lower().replace("_", "-")
         nx_unit.seeAlso.append(web_page)
         unit_categories[unit]["onto_class"] = nx_unit
+    owlready2.AllDisjoint([v["onto_class"] for k,v in unit_categories.items()])
+
 
     data_types = load_data_types()
     for dtype in data_types.keys():
-        nx_dtype = types.new_class(dtype, (str,)) # TODO: This should be the appropriate Python data type.
-        owlready2.declare_datatype(nx_dtype, base_iri + "DataTypes/" + dtype, lambda x : x, lambda x : x)
-        # nx_dtype.set_iri(nx_dtype, base_iri + "DataTypes/" + dtype)
-        # nx_dtype.label.append(dtype)
-        # nx_dtype.comment.append(data_types[dtype]["doc"])
-        # web_page = web_page_base_prefix + "nxdl-types.html#" + dtype.lower().replace("_", "-")
-        # nx_dtype.seeAlso.append(web_page)
-        data_types[dtype]["onto_class"] = nx_dtype
-        
+        # nx_dtype = types.new_class(dtype, (str,)) # TODO: This should be the appropriate Python data type.
+        # owlready2.declare_datatype(nx_dtype, base_iri + "DataTypes/" + dtype, lambda x : x, lambda x : x)
+        nx_dtype = types.new_class(dtype, (NeXusDataType,)) # TODO: This should be the appropriate Python data type.
+        nx_dtype.set_iri(nx_dtype, base_iri + "DataTypes/" + dtype)
+        nx_dtype.label.append(dtype)
+        nx_dtype.comment.append(data_types[dtype]["doc"])
+        web_page = web_page_base_prefix + "nxdl-types.html#" + dtype.lower().replace("_", "-")
+        nx_dtype.seeAlso.append(web_page)
+        data_types[dtype]["onto_class"] = nx_dtype       
+    owlready2.AllDisjoint([v["onto_class"] for k,v in data_types.items()])
 
     # Adding base classes to our ontology
     for nxBaseClass in nxdl_info["base_classes"].keys():
@@ -313,7 +331,9 @@ with onto:
         web_page = web_page_prefix + nxdl_info["field"][field]["category"] + "/" + field.split("/")[0] + ".html#"+field.lower().replace("/", "-").replace("_", "-") + "-field"
         nx_field.seeAlso.append(web_page)
         # nx_field.is_a.append(has.some(data_types[nxdl_info["field"][field]["type"]]["onto_class"]))
-        nx_field.is_a.append(has.some(unit_categories[nxdl_info["field"][field]["unit_category"]]["onto_class"]))
+        nx_field.is_a.append(hasValue.some(data_types[nxdl_info["field"][field]["type"]]["onto_class"]))
+        nx_field.is_a.append(hasValue.max(0,owlready2.Not(data_types[nxdl_info["field"][field]["type"]]["onto_class"])))
+        nx_field.is_a.append(hasUnit.max(1, unit_categories[nxdl_info["field"][field]["unit_category"]]["onto_class"]))
         nxdl_info["field"][field]["onto_class"] = nx_field
 
         if "enums" in nxdl_info["field"][field]:
@@ -340,9 +360,19 @@ with onto:
         nx_attribute.comment.append(nxdl_info["attribute"][attribute]["comment"])
         web_page = web_page_prefix + nxdl_info["attribute"][attribute]["category"] + "/" + attribute.split("/")[0] + ".html#"+attribute.lower().replace("/", "-").replace("_", "-") + "-attribute"
         nx_attribute.seeAlso.append(web_page)
-        # nx_attribute.is_a.append(has.some(data_types[nxdl_info["attribute"][attribute]["type"]]["onto_class"]))
+        nx_attribute.is_a.append(hasValue.some(data_types[nxdl_info["attribute"][attribute]["type"]]["onto_class"]))
+        nx_attribute.is_a.append(hasValue.max(0,owlready2.Not(data_types[nxdl_info["attribute"][attribute]["type"]]["onto_class"])))
         nxdl_info["attribute"][attribute]["onto_class"] = nx_attribute
 
+        if "enums" in nxdl_info["attribute"][attribute]:
+            nxdl_info["attribute"][attribute]["enums_classes"] = []
+            for enum in nxdl_info["attribute"][attribute]["enums"]:
+                nx_enum = types.new_class(attribute+"/"+enum, (NeXusEnumerationItem,))
+                nx_enum.label.append(attribute+"/"+enum)
+                nx_enum.seeAlso.append(web_page)
+                nxdl_info["attribute"][attribute]["enums_classes"].append(nx_enum)
+                    
+            nx_attribute.is_a.append(owlready2.OneOf(nxdl_info["attribute"][attribute]["enums_classes"]))
         set_has_a_relationships(attribute, "attribute", nx_attribute, "group" if attribute[:attribute.rfind("/")] in nxdl_info["group"] else "field")
 
     for attribute in nxdl_info["attribute"].keys():
@@ -357,18 +387,25 @@ with onto:
     
     # Instances - Dataset
     dataset="dataset_000/"
-    class hasValue(owlready2.DataProperty):
-        range = [data_types["NX_CHAR"]["onto_class"]]
-
+    
     value = data_types["NX_CHAR"]["onto_class"]("Key something")
+    valueInt = data_types["NX_INT"]["onto_class"](123)
+    valueFloat = data_types["NX_FLOAT"]["onto_class"](123.456)
+    unit1 = unit_categories["NX_ANY"]["onto_class"]("keV")
 
     name = nxdl_info["field"]["NXsensor/name"]["onto_class"]()
     name.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/name")
     name.hasValue = [value]
+    name.hasUnit = [unit1]
+
+    ltv = nxdl_info["field"]["NXsensor/low_trip_value"]["onto_class"]()
+    ltv.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/low_trip_value")
+    ltv.hasValue = [valueFloat]
+    ltv.hasUnit = [unit1]
 
     current_sensor = nxdl_info["group"]["NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor"]["onto_class"]()
     current_sensor.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor")
-    current_sensor.has = [name]
+    current_sensor.has = [name,ltv]
 
     environment = nxdl_info["group"]["NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT"]["onto_class"]()
     environment.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT")
@@ -390,6 +427,14 @@ with onto:
     root.label.append(dataset)
     root.has = [entry]
 
+
+    # introducing contradictions
+    
+    # different datatypes
+    # ltv.hasValue.append(valueInt)
+    # ltv.hasValue.append(value)
+
+    # wrong enums
 
 
 
