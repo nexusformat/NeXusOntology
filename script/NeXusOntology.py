@@ -356,11 +356,41 @@ with onto:
             
     
     # Instances - Dataset
+    dataset="dataset_000/"
     class hasValue(owlready2.DataProperty):
         range = [data_types["NX_CHAR"]["onto_class"]]
 
-    name = nxdl_info["field"]["NXsensor/name"]["onto_class"]()
     value = data_types["NX_CHAR"]["onto_class"]("Key something")
+
+    name = nxdl_info["field"]["NXsensor/name"]["onto_class"]()
+    name.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/name")
     name.hasValue = [value]
+
+    current_sensor = nxdl_info["group"]["NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor"]["onto_class"]()
+    current_sensor.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor")
+    current_sensor.has = [name]
+
+    environment = nxdl_info["group"]["NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT"]["onto_class"]()
+    environment.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT")
+    environment.has = [current_sensor]
+
+    instrument = nxdl_info["group"]["NXiv_temp/ENTRY/INSTRUMENT"]["onto_class"]()
+    instrument.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT")
+    instrument.has = [environment]
+
+    entry = nxdl_info["group"]["NXiv_temp/ENTRY"]["onto_class"]()
+    entry.label.append(dataset+"NXiv_temp/ENTRY")
+    entry.has = [instrument]
+
+    appdef = nxdl_info["applications"]["NXiv_temp"]["onto_class"]()
+    appdef.label.append(dataset+"NXiv_temp")
+    appdef.has = [entry]
+
+    root = nxdl_info["base_classes"]["NXroot"]["onto_class"]()
+    root.label.append(dataset)
+    root.has = [entry]
+
+
+
 
 onto.save(file = "../ontology/NeXusOntology.owl", format = "rdfxml")
