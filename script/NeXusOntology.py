@@ -210,13 +210,13 @@ with onto:
 
     class has(NXobject >> NXobject):
         comment = 'A representation of a "has a" relationship.'
-    #class hasValue(owlready2.DataProperty):
-    #    range = [data_types["NX_CHAR"]["onto_class"],data_types["NX_INT"]["onto_class"],data_types["NX_NUMBER"]["onto_class"]]
-    class hasValue(NXobject >> NeXusDataType):
+    class actualValue(owlready2.DataProperty):
+        domain = [NeXus]
+    class hasValue(owlready2.FunctionalProperty, NXobject >> NeXusDataType):
         comment = 'Representation fo having a Value assigned.'
-    class hasUnit(NeXusField >> NeXusUnitCategory):
+    class hasUnit(owlready2.FunctionalProperty, NeXusField >> NeXusUnitCategory):
         comment = 'Representation of having a Unit assigned.'
-    owlready2.AllDisjoint([has,hasValue,hasUnit])
+    owlready2.AllDisjoint([has,hasValue,hasUnit,actualValue])
 
     def set_is_a_or_equivalent(subclass, superclass):
         def has_diff_relations(subclass, superclass):
@@ -388,20 +388,28 @@ with onto:
     # Instances - Dataset
     dataset="dataset_000/"
     
-    value = data_types["NX_CHAR"]["onto_class"]("Key something")
-    valueInt = data_types["NX_INT"]["onto_class"](123)
-    valueFloat = data_types["NX_FLOAT"]["onto_class"](123.456)
-    unit1 = unit_categories["NX_ANY"]["onto_class"]("keV")
+    # value = data_types["NX_CHAR"]["onto_class"]("Key something")
+    # valueInt = data_types["NX_INT"]["onto_class"](123)
+    # valueFloat = data_types["NX_FLOAT"]["onto_class"](123.456)
+    # unit1 = unit_categories["NX_ANY"]["onto_class"]("keV")
+    value = data_types["NX_CHAR"]["onto_class"]()
+    value.actualValue = ["Key something"]
+    valueInt = data_types["NX_INT"]["onto_class"]()
+    valueInt.actualValue = [123]
+    valueFloat = data_types["NX_FLOAT"]["onto_class"]()
+    valueFloat.actualValue = [123.456]
+    unit1 = unit_categories["NX_ANY"]["onto_class"]()
+    unit1.actualValue = ["keV"]
 
     name = nxdl_info["field"]["NXsensor/name"]["onto_class"]()
     name.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/name")
-    name.hasValue = [value]
-    name.hasUnit = [unit1]
+    name.hasValue = value
+    name.hasUnit = unit1
 
     ltv = nxdl_info["field"]["NXsensor/low_trip_value"]["onto_class"]()
     ltv.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/low_trip_value")
-    ltv.hasValue = [valueFloat]
-    ltv.hasUnit = [unit1]
+    ltv.hasValue = valueFloat
+    ltv.hasUnit = unit1
 
     current_sensor = nxdl_info["group"]["NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor"]["onto_class"]()
     current_sensor.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor")
