@@ -201,18 +201,24 @@ class NeXusOntology:
                 nx_child.seeAlso.append(web_page)
 
                 if child_type in ("field", "attribute"):
-                    nx_child.is_a.append(self.hasValueContainer.some(self.data_types[self.nxdl_info[child_type][child]["type"]]["onto_class"]))
-                    nx_child.is_a.append(self.hasValueContainer.max(0,owlready2.Not(self.data_types[self.nxdl_info[child_type][child]["type"]]["onto_class"])))
-                    if child_type == "field":
-                        nx_child.is_a.append(self.hasUnitContainer.max(1, self.unit_categories[self.nxdl_info[child_type][child]["unit_category"]]["onto_class"]))
-
-                if "enums" in self.nxdl_info[child_type][child]:
-                    self.nxdl_info[child_type][child]["enums_classes"] = []
-                    for enum in self.nxdl_info[child_type][child]["enums"]:
-                        nx_enum = types.new_class(child+"/"+enum, (self.NeXusEnumerationItem,))
-                        nx_enum.label.append(child+"/"+enum)
-                        nx_enum.seeAlso.append(web_page)
-                        self.nxdl_info[child_type][child]["enums_classes"].append(nx_enum)
+                    if "enums" in self.nxdl_info[child_type][child]:
+                        #self.nxdl_info[child_type][child]["enums_classes"] = []
+                        #for enum in self.nxdl_info[child_type][child]["enums"]:
+                        #    nx_enum = types.new_class(child+"/"+enum, (self.NeXusEnumerationItem,))
+                        #    nx_enum.label.append(child+"/"+enum)
+                        #    nx_enum.seeAlso.append(web_page)
+                        #    nx_enum.actualValue = [enum]
+                        #    self.nxdl_info[child_type][child]["enums_classes"].append(nx_enum)
+                        #nx_child.is_a.append(owlready2.OneOf(self.nxdl_info[child_type][child]["enums_classes"]))
+                        
+                        # ideally "only", but subclass should override it!!!
+                        # nx_child.is_a.append(self.actualValue.only(owlready2.OneOf(self.nxdl_info[child_type][child]["enums"])))
+                        nx_child.is_a.append(self.actualValue.some(owlready2.OneOf(self.nxdl_info[child_type][child]["enums"])))
+                    else:
+                        nx_child.is_a.append(self.hasValueContainer.some(self.data_types[self.nxdl_info[child_type][child]["type"]]["onto_class"]))
+                        nx_child.is_a.append(self.hasValueContainer.max(0,owlready2.Not(self.data_types[self.nxdl_info[child_type][child]["type"]]["onto_class"])))
+                        if child_type == "field":
+                            nx_child.is_a.append(self.hasUnitContainer.max(1, self.unit_categories[self.nxdl_info[child_type][child]["unit_category"]]["onto_class"]))
 
                 self.__set_has_a_relationships(child, child_type, nx_child, "group" if child[:child.rfind("/")] in self.nxdl_info["group"] else "field")
 
@@ -241,6 +247,8 @@ class NeXusOntology:
         valueFloat.actualValue = [123.456]
         unit1 = self.unit_categories["NX_ANY"]["onto_class"]()
         unit1.actualValue = ["keV"]
+        #valueDef = self.data_types["NX_CHAR"]["onto_class"]()
+        #valueDef.actualValue = ["bad"]
 
         name = self.nxdl_info["field"]["NXsensor/name"]["onto_class"]()
         name.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/name")
@@ -263,10 +271,15 @@ class NeXusOntology:
         instrument = self.nxdl_info["group"]["NXiv_temp/ENTRY/INSTRUMENT"]["onto_class"]()
         instrument.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT")
         instrument.has = [environment]
-
+        
+        definition = self.nxdl_info["field"]["NXiv_temp/ENTRY/definition"]["onto_class"]()
+        definition.label.append(dataset+"NXiv_temp/ENTRY/definition")
+        #definition.hasValueContainer = valueDef
+        definition.actualValue = ["NXiv_temp"]
+        
         entry = self.nxdl_info["group"]["NXiv_temp/ENTRY"]["onto_class"]()
         entry.label.append(dataset+"NXiv_temp/ENTRY")
-        entry.has = [instrument]
+        entry.has = [instrument,definition]
 
         appdef = self.nxdl_info["applications"]["NXiv_temp"]["onto_class"]()
         appdef.label.append(dataset+"NXiv_temp")
@@ -284,6 +297,7 @@ class NeXusOntology:
         # ltv.hasValue.append(value)
 
         # wrong enums
+        # definition.actualValue = ["still bad"]
 
 
 
