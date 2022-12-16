@@ -91,13 +91,13 @@ class NeXusOntology:
             class actualValue(owlready2.DataProperty):
                 domain = [NeXus]
             self.actualValue = actualValue
-            class hasValue(owlready2.FunctionalProperty, NXobject >> NeXusDataType):
+            class hasValueContainer(owlready2.FunctionalProperty, NXobject >> NeXusDataType):
                 comment = 'Representation fo having a Value assigned.'
-            self.hasValue = hasValue
-            class hasUnit(owlready2.FunctionalProperty, NeXusField >> NeXusUnitCategory):
+            self.hasValueContainer = hasValueContainer
+            class hasUnitContainer(owlready2.FunctionalProperty, NeXusField >> NeXusUnitCategory):
                 comment = 'Representation of having a Unit assigned.'
-            self.hasUnit = hasUnit
-            owlready2.AllDisjoint([has,hasValue,hasUnit,actualValue])
+            self.hasUnitContainer = hasUnitContainer
+            owlready2.AllDisjoint([has,hasValueContainer,hasUnitContainer,actualValue])
 
     def __set_is_a_or_equivalent(self, subclass, superclass):
         def has_diff_relations(subclass, superclass):
@@ -164,6 +164,11 @@ class NeXusOntology:
                 nx_dtype.seeAlso.append(web_page)
                 data_types[dtype]["onto_class"] = nx_dtype       
             owlready2.AllDisjoint([v["onto_class"] for k,v in data_types.items()])
+            data_types["NX_CHAR"]["onto_class"].is_a.append(self.actualValue.some(str))  
+            data_types["NX_INT"]["onto_class"].is_a.append(self.actualValue.some(int))  
+            data_types["NX_FLOAT"]["onto_class"].is_a.append(self.actualValue.some(float))  
+            data_types["NX_BOOLEAN"]["onto_class"].is_a.append(self.actualValue.some(bool))  
+            data_types["NX_NUMBER"]["onto_class"].is_a.append(owlready2.Or([self.actualValue.some(int),self.actualValue.some(float)]))
         return data_types
 
     def gen_classes(self):
@@ -196,10 +201,10 @@ class NeXusOntology:
                 nx_child.seeAlso.append(web_page)
 
                 if child_type in ("field", "attribute"):
-                    nx_child.is_a.append(self.hasValue.some(self.data_types[self.nxdl_info[child_type][child]["type"]]["onto_class"]))
-                    nx_child.is_a.append(self.hasValue.max(0,owlready2.Not(self.data_types[self.nxdl_info[child_type][child]["type"]]["onto_class"])))
+                    nx_child.is_a.append(self.hasValueContainer.some(self.data_types[self.nxdl_info[child_type][child]["type"]]["onto_class"]))
+                    nx_child.is_a.append(self.hasValueContainer.max(0,owlready2.Not(self.data_types[self.nxdl_info[child_type][child]["type"]]["onto_class"])))
                     if child_type == "field":
-                        nx_child.is_a.append(self.hasUnit.max(1, self.unit_categories[self.nxdl_info[child_type][child]["unit_category"]]["onto_class"]))
+                        nx_child.is_a.append(self.hasUnitContainer.max(1, self.unit_categories[self.nxdl_info[child_type][child]["unit_category"]]["onto_class"]))
 
                 if "enums" in self.nxdl_info[child_type][child]:
                     self.nxdl_info[child_type][child]["enums_classes"] = []
@@ -239,13 +244,13 @@ class NeXusOntology:
 
         name = self.nxdl_info["field"]["NXsensor/name"]["onto_class"]()
         name.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/name")
-        name.hasValue = value
-        name.hasUnit = unit1
+        name.hasValueContainer = value
+        name.hasUnitContainer = unit1
 
         ltv = self.nxdl_info["field"]["NXsensor/low_trip_value"]["onto_class"]()
         ltv.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/low_trip_value")
-        ltv.hasValue = valueFloat
-        ltv.hasUnit = unit1
+        ltv.hasValueContainer = valueFloat
+        ltv.hasUnitContainer = unit1
 
         current_sensor = self.nxdl_info["group"]["NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor"]["onto_class"]()
         current_sensor.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor")
