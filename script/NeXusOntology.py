@@ -212,11 +212,11 @@ with onto:
         comment = 'A representation of a "has a" relationship.'
     class actualValue(owlready2.DataProperty):
         domain = [NeXus]
-    class hasValue(owlready2.FunctionalProperty, NXobject >> NeXusDataType):
+    class hasVauleContainer(owlready2.FunctionalProperty, NXobject >> NeXusDataType):
         comment = 'Representation fo having a Value assigned.'
-    class hasUnit(owlready2.FunctionalProperty, NeXusField >> NeXusUnitCategory):
+    class hasUnitContainer(owlready2.FunctionalProperty, NeXusField >> NeXusUnitCategory):
         comment = 'Representation of having a Unit assigned.'
-    owlready2.AllDisjoint([has,hasValue,hasUnit,actualValue])
+    owlready2.AllDisjoint([has,hasVauleContainer,hasUnitContainer,actualValue])
 
     def set_is_a_or_equivalent(subclass, superclass):
         def has_diff_relations(subclass, superclass):
@@ -260,6 +260,11 @@ with onto:
         nx_dtype.seeAlso.append(web_page)
         data_types[dtype]["onto_class"] = nx_dtype       
     owlready2.AllDisjoint([v["onto_class"] for k,v in data_types.items()])
+    data_types["NX_CHAR"]["onto_class"].is_a.append(actualValue.some(str))  
+    data_types["NX_INT"]["onto_class"].is_a.append(actualValue.some(int))  
+    data_types["NX_FLOAT"]["onto_class"].is_a.append(actualValue.some(float))  
+    data_types["NX_BOOLEAN"]["onto_class"].is_a.append(actualValue.some(bool))  
+    data_types["NX_NUMBER"]["onto_class"].is_a.append(owlready2.Or([actualValue.some(int),actualValue.some(float)]))  
 
     # Adding base classes to our ontology
     for nxBaseClass in nxdl_info["base_classes"].keys():
@@ -331,9 +336,9 @@ with onto:
         web_page = web_page_prefix + nxdl_info["field"][field]["category"] + "/" + field.split("/")[0] + ".html#"+field.lower().replace("/", "-").replace("_", "-") + "-field"
         nx_field.seeAlso.append(web_page)
         # nx_field.is_a.append(has.some(data_types[nxdl_info["field"][field]["type"]]["onto_class"]))
-        nx_field.is_a.append(hasValue.some(data_types[nxdl_info["field"][field]["type"]]["onto_class"]))
-        nx_field.is_a.append(hasValue.max(0,owlready2.Not(data_types[nxdl_info["field"][field]["type"]]["onto_class"])))
-        nx_field.is_a.append(hasUnit.max(1, unit_categories[nxdl_info["field"][field]["unit_category"]]["onto_class"]))
+        nx_field.is_a.append(hasVauleContainer.some(data_types[nxdl_info["field"][field]["type"]]["onto_class"]))
+        nx_field.is_a.append(hasVauleContainer.max(0,owlready2.Not(data_types[nxdl_info["field"][field]["type"]]["onto_class"])))
+        nx_field.is_a.append(hasUnitContainer.max(1, unit_categories[nxdl_info["field"][field]["unit_category"]]["onto_class"]))
         nxdl_info["field"][field]["onto_class"] = nx_field
 
         if "enums" in nxdl_info["field"][field]:
@@ -360,8 +365,8 @@ with onto:
         nx_attribute.comment.append(nxdl_info["attribute"][attribute]["comment"])
         web_page = web_page_prefix + nxdl_info["attribute"][attribute]["category"] + "/" + attribute.split("/")[0] + ".html#"+attribute.lower().replace("/", "-").replace("_", "-") + "-attribute"
         nx_attribute.seeAlso.append(web_page)
-        nx_attribute.is_a.append(hasValue.some(data_types[nxdl_info["attribute"][attribute]["type"]]["onto_class"]))
-        nx_attribute.is_a.append(hasValue.max(0,owlready2.Not(data_types[nxdl_info["attribute"][attribute]["type"]]["onto_class"])))
+        nx_attribute.is_a.append(hasVauleContainer.some(data_types[nxdl_info["attribute"][attribute]["type"]]["onto_class"]))
+        nx_attribute.is_a.append(hasVauleContainer.max(0,owlready2.Not(data_types[nxdl_info["attribute"][attribute]["type"]]["onto_class"])))
         nxdl_info["attribute"][attribute]["onto_class"] = nx_attribute
 
         if "enums" in nxdl_info["attribute"][attribute]:
@@ -403,13 +408,13 @@ with onto:
 
     name = nxdl_info["field"]["NXsensor/name"]["onto_class"]()
     name.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/name")
-    name.hasValue = value
-    name.hasUnit = unit1
+    name.hasVauleContainer = value
+    name.hasUnitContainer = unit1
 
     ltv = nxdl_info["field"]["NXsensor/low_trip_value"]["onto_class"]()
     ltv.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/low_trip_value")
-    ltv.hasValue = valueFloat
-    ltv.hasUnit = unit1
+    ltv.hasVauleContainer = valueFloat
+    ltv.hasUnitContainer = unit1
 
     current_sensor = nxdl_info["group"]["NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor"]["onto_class"]()
     current_sensor.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor")
@@ -439,8 +444,8 @@ with onto:
     # introducing contradictions
     
     # different datatypes
-    # ltv.hasValue.append(valueInt)
-    # ltv.hasValue.append(value)
+    # ltv.hasVauleContainer.append(valueInt)
+    # ltv.hasVauleContainer.append(value)
 
     # wrong enums
 
