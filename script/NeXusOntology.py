@@ -4,10 +4,21 @@ import xml.dom.minidom
 import xml.etree.ElementTree as ET
 import types
 from nexusutils.nexus import nexus
+import pygit2
+import hashlib
+
+def get_self_file_hash():
+    with open(__file__, "rb") as f:
+        h = hashlib.sha1()
+        h.update(f.read())
+        return h.hexdigest()
 
 web_page_base_prefix = 'https://fairmat-experimental.github.io/nexus-fairmat-proposal/1c3806dba40111f36a16d0205cc39a5b7d52ca2e/'
 web_page_prefix = web_page_base_prefix + "classes/"
 nexus_def_path = "../definitions"
+
+repo = pygit2.Repository(nexus_def_path)
+def_commit = repo.head.target.hex[:7]
 
 nxdl_folders = ["contributed_definitions", "base_classes", "applications"]
 
@@ -133,17 +144,19 @@ def load_all_nxdls() -> dict:
                 elist = nexus.get_inherited_nodes(nxdl_path=path[path.find("/"):], nx_name=path[:path.find("/")])[2]
                 if len(elist)>1:
                     nxdl_info[xml_tag][path]["superclass_path"] = nexus.get_node_docname(elist[1]).replace(".nxdl.xml:","")
+                nxdl_info[xml_tag][path]["deprecated"] = element.get("deprecated")
 
     return nxdl_info
 
 owlready2.onto_path.append(nexus_def_path+"/ontology")
-base_iri = 'http://purl.org/nexusformat/definitions/'
+base_iri = 'http://purl.org/nexusformat/v2.0/definitions/' + def_commit + '/'
 onto = owlready2.get_ontology(base_iri + "NeXusOntology")
 nxdl_info = load_all_nxdls()
 
 with onto:
     class NeXus(owlready2.Thing):
         comment = 'NeXus concept'
+        versionInfo = get_self_file_hash()
 
     class NXobject(NeXus):
         comment = nxdl_info["base_classes"]['NXobject']['doc'].replace('\t','') # NeXus documentation string
@@ -316,6 +329,9 @@ with onto:
                 nxdl_info[parent_tag][parent]["onto_class"].is_a.append(has.min(nxdl_info[xml_tag][path]["minOccurs"], nx_class))
                 if nxdl_info[xml_tag][path]["maxOccurs"]:
                     nxdl_info[parent_tag][parent]["onto_class"].is_a.append(has.max(nxdl_info[xml_tag][path]["maxOccurs"], nx_class))
+            # set deprecated
+            if nxdl_info[xml_tag][path]["deprecated"] is not None:
+                nx_class.deprecated.append(True)
         set_has_a_relationships(group, "group", nx_group, "group")
 
 
@@ -351,6 +367,7 @@ with onto:
                     
             nx_field.is_a.append(owlready2.OneOf(nxdl_info["field"][field]["enums_classes"]))
         set_has_a_relationships(field, "field", nx_field, "group")
+        
 
     for field in nxdl_info["field"].keys():
         if "superclass_path" in nxdl_info["field"][field].keys():
