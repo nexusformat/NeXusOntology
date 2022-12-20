@@ -67,17 +67,12 @@ class NeXusOntology:
                 label = "NeXusUnitCategory"
             self.NeXusUnitCategory = NeXusUnitCategory
 
-            class NeXusEnumerationItem(NeXus):
-                comment = "This represents an individual as an enumeration item acceptable for certain NeXusValue."
-                label = "NeXusEnumerationItem"
-            self.NeXusEnumerationItem = NeXusEnumerationItem
-
             class NeXusDataType(NeXus):
                 comment = "any valid NeXus field or attribute type"
                 label = "NeXusDataType"
             self.NeXusDataType = NeXusDataType
 
-            owlready2.AllDisjoint([NeXusDataType, NeXusEnumerationItem,NeXusUnitCategory,NXobject])
+            owlready2.AllDisjoint([NeXusDataType,NeXusUnitCategory,NXobject])
             owlready2.AllDisjoint([NeXusGroup,NeXusField,NeXusAttribute])
             owlready2.AllDisjoint([NeXusBaseClass,NeXusField,NeXusAttribute])
             owlready2.AllDisjoint([NeXusApplicationClass,NeXusField,NeXusAttribute])
@@ -103,7 +98,7 @@ class NeXusOntology:
         def has_diff_relations(subclass, superclass):
             return len(list(set([str(x) for x in subclass.is_a if isinstance(x, owlready2.class_construct.Restriction)]) - set([str(x) for x in superclass.is_a if isinstance(x, owlready2.class_construct.Restriction)])))>0
         def has_oneof_relation(owl_class):
-            return "'OneOf([" in str([str(x) for x in subclass.is_a])
+            return "OneOf([" in str([str(x) for x in subclass.is_a])
         if subclass.comment[0] != "" or has_diff_relations(subclass, superclass) or has_oneof_relation(subclass):
             subclass.is_a.append(superclass)
 
@@ -129,9 +124,6 @@ class NeXusOntology:
                     self.nxdl_info[parent_tag][parent]["onto_class"].is_a.append(self.has.min(self.nxdl_info[xml_tag][path]["minOccurs"], nx_class))
                     if self.nxdl_info[xml_tag][path]["maxOccurs"]:
                         self.nxdl_info[parent_tag][parent]["onto_class"].is_a.append(self.has.max(self.nxdl_info[xml_tag][path]["maxOccurs"], nx_class))
-                # set deprecated
-                if self.nxdl_info[xml_tag][path]["deprecated"] is not None:
-                    nx_class.deprecated.append(True)
 
     def get_unit_categories(self):
         with self.__onto__:
@@ -183,12 +175,29 @@ class NeXusOntology:
                         # TODO: replace this extends with __set_is_a_or_equivalent() 
                         nx_class.extends.append(self.nxdl_info[base_or_app][class_name]['extends'])
                         nx_class.label.append(class_name)
-                        web_page = self.web_page_prefix + self.nxdl_info[base_or_app][class_name]["category"] + "/" + class_name + '.html' 
-                        
+                        web_page = self.web_page_prefix + self.nxdl_info[base_or_app][class_name]["category"] + "/" + class_name + '.html'                        
                         nx_class.seeAlso.append(web_page)
+                        if "deprecated" in self.nxdl_info[base_or_app][class_name].keys():
+                            nx_class.deprecated.append(True)
+
+
+    def get_parent(self,child_type,child):
+        superclass_type = None
+        superclass_path = None
+        pclass_super = None
+        if "superclass_path" in self.nxdl_info[child_type][child].keys():
+            superclass_path = self.nxdl_info[child_type][child]["superclass_path"]
+            try:
+                if superclass_path in self.nxdl_info[child_type].keys():
+                    superclass_type = child_type
+                else:
+                    superclass_type = "base_classes"
+                pclass_super = self.nxdl_info[superclass_type][superclass_path]["onto_class"]
+            except KeyError:
+                print("Warning: " + child + " is not of same type as " + superclass_path)
+        return superclass_type, superclass_path, pclass_super
 
     def gen_children(self):
-
         classes = {"group": self.NeXusGroup, "field": self.NeXusField, "attribute": self.NeXusAttribute}
         for child_type in ("group", "field", "attribute"):        
             for child in self.nxdl_info[child_type].keys():
@@ -199,41 +208,46 @@ class NeXusOntology:
                 nx_child.comment.append(self.nxdl_info[child_type][child]["comment"])
                 web_page = self.web_page_prefix + self.nxdl_info[child_type][child]["category"] + "/" + child.split("/")[0] + ".html#"+child.lower().replace("/", "-").replace("_", "-") + "-" + child_type
                 nx_child.seeAlso.append(web_page)
-
+                if self.nxdl_info[child_type][child]["deprecated"] is not None:
+                    nx_child.deprecated.append(True)
+                self.__set_has_a_relationships(child, child_type, nx_child, "group" if child[:child.rfind("/")] in self.nxdl_info["group"] else "field")
+            
                 if child_type in ("field", "attribute"):
                     if "enums" in self.nxdl_info[child_type][child]:
-                        #self.nxdl_info[child_type][child]["enums_classes"] = []
-                        #for enum in self.nxdl_info[child_type][child]["enums"]:
-                        #    nx_enum = types.new_class(child+"/"+enum, (self.NeXusEnumerationItem,))
-                        #    nx_enum.label.append(child+"/"+enum)
-                        #    nx_enum.seeAlso.append(web_page)
-                        #    nx_enum.actualValue = [enum]
-                        #    self.nxdl_info[child_type][child]["enums_classes"].append(nx_enum)
-                        #nx_child.is_a.append(owlready2.OneOf(self.nxdl_info[child_type][child]["enums_classes"]))
-                        
-                        # ideally "only", but subclass should override it!!!
-                        # nx_child.is_a.append(self.actualValue.only(owlready2.OneOf(self.nxdl_info[child_type][child]["enums"])))
-                        nx_child.is_a.append(self.actualValue.some(owlready2.OneOf(self.nxdl_info[child_type][child]["enums"])))
+                           nx_child.is_a.append(self.actualValue.only(owlready2.OneOf(self.nxdl_info[child_type][child]["enums"])))
                     else:
                         nx_child.is_a.append(self.hasValueContainer.some(self.data_types[self.nxdl_info[child_type][child]["type"]]["onto_class"]))
                         nx_child.is_a.append(self.hasValueContainer.max(0,owlready2.Not(self.data_types[self.nxdl_info[child_type][child]["type"]]["onto_class"])))
                         if child_type == "field":
                             nx_child.is_a.append(self.hasUnitContainer.max(1, self.unit_categories[self.nxdl_info[child_type][child]["unit_category"]]["onto_class"]))
-
-                self.__set_has_a_relationships(child, child_type, nx_child, "group" if child[:child.rfind("/")] in self.nxdl_info["group"] else "field")
-
+    
+            # cleaning enum restrictions in superclass
             for child in self.nxdl_info[child_type].keys():
-                if "superclass_path" in self.nxdl_info[child_type][child].keys():
-                    superclass_path = self.nxdl_info[child_type][child]["superclass_path"]
-                    try:
-                        if superclass_path in self.nxdl_info[child_type].keys():
-                            pclass_super = self.nxdl_info[child_type][superclass_path]["onto_class"]
-                        else:
-                            pclass_super = self.nxdl_info["base_classes"][superclass_path]["onto_class"]
-                        self.__set_is_a_or_equivalent(self.nxdl_info[child_type][child]["onto_class"], pclass_super)
-                    except KeyError:
-                        print("Warning: " + child + " is not of same type as " + superclass_path)
-            
+                nx_child = self.nxdl_info[child_type][child]["onto_class"]
+                if child_type in ("field", "attribute"):
+                    if "enums" in self.nxdl_info[child_type][child]:
+                        act_type, act_child = child_type, child
+                        superclass_type, superclass_path, pclass_super = self.get_parent(act_type,act_child)
+                        while  pclass_super is not None:
+                            #if it has enum, replace the condition
+                            fnd = False
+                            for restriction in pclass_super.is_a:
+                                if "actualValue" in str(restriction):
+                                    fnd = True
+                                    pclass_super.is_a.remove(restriction)
+                                    pclass_super.is_a.append(owlready2.Or([self.actualValue.only(owlready2.OneOf(self.nxdl_info[superclass_type][superclass_path]["enums"])),self.nxdl_info[child_type][child]["onto_class"]]))
+                                    break
+                            if fnd:
+                                break
+                            act_type, act_child = superclass_type, superclass_path
+                            superclass_type, superclass_path, pclass_super = self.get_parent(act_type,act_child)
+                       
+          
+            for child in self.nxdl_info[child_type].keys():
+                superclass_type, superclass_path, pclass_super = self.get_parent(child_type,child)
+                if pclass_super:
+                    self.__set_is_a_or_equivalent(self.nxdl_info[child_type][child]["onto_class"], pclass_super)
+
     
     # Instances - Dataset
     def gen_datasets(self):
@@ -247,9 +261,7 @@ class NeXusOntology:
         valueFloat.actualValue = [123.456]
         unit1 = self.unit_categories["NX_ANY"]["onto_class"]()
         unit1.actualValue = ["keV"]
-        #valueDef = self.data_types["NX_CHAR"]["onto_class"]()
-        #valueDef.actualValue = ["bad"]
-
+    
         name = self.nxdl_info["field"]["NXsensor/name"]["onto_class"]()
         name.label.append(dataset+"NXiv_temp/ENTRY/INSTRUMENT/ENVIRONMENT/current_sensor/name")
         name.hasValueContainer = value
@@ -274,7 +286,6 @@ class NeXusOntology:
         
         definition = self.nxdl_info["field"]["NXiv_temp/ENTRY/definition"]["onto_class"]()
         definition.label.append(dataset+"NXiv_temp/ENTRY/definition")
-        #definition.hasValueContainer = valueDef
         definition.actualValue = ["NXiv_temp"]
         
         entry = self.nxdl_info["group"]["NXiv_temp/ENTRY"]["onto_class"]()
