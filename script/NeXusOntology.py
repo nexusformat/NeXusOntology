@@ -92,7 +92,7 @@ class NeXusOntology:
             class hasUnitContainer(owlready2.FunctionalProperty, NeXusField >> NeXusUnitCategory):
                 comment = 'Representation of having a Unit assigned.'
             self.hasUnitContainer = hasUnitContainer
-            owlready2.AllDisjoint([has,hasValueContainer,hasUnitContainer,actualValue])
+            owlready2.AllDisjoint([has,hasValueContainer,hasUnitContainer])
 
     def __set_is_a_or_equivalent(self, subclass, superclass):
         def has_diff_relations(subclass, superclass):
