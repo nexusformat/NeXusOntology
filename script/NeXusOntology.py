@@ -235,7 +235,7 @@ class NeXusOntology:
                                 if "actualValue" in str(restriction):
                                     fnd = True
                                     pclass_super.is_a.remove(restriction)
-                                    pclass_super.is_a.append(owlready2.Or([self.actualValue.only(owlready2.OneOf(self.nxdl_info[superclass_type][superclass_path]["enums"])),self.nxdl_info[child_type][child]["onto_class"]]))
+                                    pclass_super.is_a.append(owlready2.Or([restriction,self.nxdl_info[child_type][child]["onto_class"]]))
                                     break
                             if fnd:
                                 break
