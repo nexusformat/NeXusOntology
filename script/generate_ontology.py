@@ -1,13 +1,16 @@
 import owlready2
 from NeXusOntology import NeXusOntology
 import pygit2
+import os
 
-nexus_def_path = "../definitions"
+local_dir = os.path.abspath(os.path.dirname(__file__))
+nexus_def_path = os.path.join(local_dir, f"..{os.sep}definitions")
+os.environ['NEXUS_DEF_PATH']=nexus_def_path
 
 repo = pygit2.Repository(nexus_def_path)
 def_commit = repo.head.target.hex[:7]
 
-web_page_base_prefix = 'https://fairmat-experimental.github.io/nexus-fairmat-proposal/1c3806dba40111f36a16d0205cc39a5b7d52ca2e/'
+web_page_base_prefix = 'https://fairmat-nfdi.github.io/nexus-fairmat-proposal/9636feecb79bb32b828b1a9804269573256d7696/'
 
 base_iri = 'http://purl.org/nexusformat/v2.0/definitions/' + def_commit + '/'
 onto = owlready2.get_ontology(base_iri + "NeXusOntology")
@@ -17,4 +20,4 @@ nexus_ontology.gen_classes()
 nexus_ontology.gen_children()
 nexus_ontology.gen_datasets()
 
-onto.save(file = "../ontology/NeXusOntology.owl", format = "rdfxml")
+onto.save(file = os.path.join(local_dir, f"..{os.sep}ontology{os.sep}NeXusOntology.owl"), format = "rdfxml")

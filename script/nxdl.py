@@ -1,16 +1,25 @@
 from os import walk
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
-from nexusutils.nexus import nexus
+from pynxtools.nexus import nexus
+import os
 
-nexus_def_path = "../definitions"
+local_dir = os.path.abspath(os.path.dirname(__file__))
+nexus_def_path = os.path.join(local_dir, f"..{os.sep}definitions")
+os.environ['NEXUS_DEF_PATH']=nexus_def_path
 nxdl_folders = ["contributed_definitions", "base_classes", "applications"]
 
 namespace = {"nxdl": "http://definition.nexusformat.org/nxdl/3.1"}
 
 def get_all_tags(iterator, xml_tag):
     path = []
+    skip = False
     for event, element in iterator:
+        if element.tag == "{http://definition.nexusformat.org/nxdl/3.1}choice":
+            skip = True if event == "start" else False
+            continue
+        if skip:
+            continue
         if element.get("name") or (element.tag == "{http://definition.nexusformat.org/nxdl/3.1}group" and element.get("type")):
             if event == "start":
                 name = element.get("name") or element.get("type").upper()[2:]
@@ -127,7 +136,7 @@ def load_all_nxdls() -> dict:
                     nxdl_info[xml_tag][path]["enums"] = enums.split(",")
                 elist = nexus.get_inherited_nodes(nxdl_path=path[path.find("/"):], nx_name=path[:path.find("/")])[2]
                 if len(elist)>1:
-                    nxdl_info[xml_tag][path]["superclass_path"] = nexus.get_node_docname(elist[1]).replace(".nxdl.xml:","")
+                    nxdl_info[xml_tag][path]["superclass_path"] = nexus.get_node_concept_path(elist[1]).replace(".nxdl.xml:","")
                 nxdl_info[xml_tag][path]["deprecated"] = element.get("deprecated")
 
     return nxdl_info
