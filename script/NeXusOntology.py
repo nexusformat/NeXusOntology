@@ -16,12 +16,13 @@ def get_script_hash():
             return h.hexdigest()
 class NeXusOntology:
 
-    def __init__(self, onto, base_iri, web_page_base_prefix):
+    def __init__(self, onto, base_iri, web_page_base_prefix, versionInfo):
         self.__onto__ = onto
         self.nxdl_info = nxdl.load_all_nxdls()
         self.base_iri = base_iri
         self.web_page_base_prefix = web_page_base_prefix
         self.web_page_prefix = self.web_page_base_prefix + "classes/"
+        self.versionInfo = versionInfo
         self.setup_owl_parents()
         self.data_types = self.get_data_types()
         self.unit_categories = self.get_unit_categories()
@@ -30,7 +31,7 @@ class NeXusOntology:
         with self.__onto__:
             class NeXus(owlready2.Thing):
                 comment = 'NeXus concept'
-                versionInfo = get_script_hash()
+                versionInfo = self.versionInfo
             self.NeXus = NeXus
             class NXobject(NeXus):
                 comment = self.nxdl_info["base_classes"]['NXobject']['doc'].replace('\t','') # NeXus documentation string
