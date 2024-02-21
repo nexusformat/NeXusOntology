@@ -1,8 +1,10 @@
 from os import walk
 import xml.dom.minidom
 import xml.etree.ElementTree as ET
-from pynxtools.nexus import nexus
 import os
+import definitions.dev_tools.utils.nxdl_utils as nexus
+
+
 
 local_dir = os.path.abspath(os.path.dirname(__file__))
 nexus_def_path = os.path.join(local_dir, f"..{os.sep}definitions")

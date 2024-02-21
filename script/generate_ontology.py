@@ -1,5 +1,5 @@
 import owlready2
-from NeXusOntology import NeXusOntology
+from .NeXusOntology import NeXusOntology
 import pygit2
 import os
 
@@ -11,7 +11,7 @@ repo = pygit2.Repository(nexus_def_path)
 def_commit = repo.head.target.hex[:7]
 
 # Official NeXus definitions: https://manual.nexusformat.org/classes/
-web_page_base_prefix = 'https://fairmat-nfdi.github.io/nexus_definitions/'
+web_page_base_prefix = 'https://manual.nexusformat.org/'
 
 detailed_iri = 'http://purl.org/nexusformat/v2.0/definitions/' + def_commit + '/'
 base_iri = 'http://purl.org/nexusformat/definitions/'

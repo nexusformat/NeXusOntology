@@ -3,7 +3,7 @@ import owlready2
 import types
 import hashlib
 
-import nxdl
+from . import nxdl
 
 script_files = next(walk("./"), (None, None, []))[2]
 script_files = list(filter(lambda filename: filename.endswith(".py"), script_files))
