@@ -1,3 +1,8 @@
+# How to run the latest Ontology
+
+Make sure you have the definitions submodule initialized using: git submodule update --init
+CD to the script folder. Run 'python generate_ontolgy.py'
+
 # NeXusOntology
 NeXusOntology: Machine-readable ontology of the NeXus definitions.
 
